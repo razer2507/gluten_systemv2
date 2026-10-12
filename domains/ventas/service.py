@@ -5,6 +5,7 @@ from domains.clientes.repository import ClientesRepository
 from domains.ventas.models import DetalleVenta, Venta
 from domains.ventas.repository import VentasRepository
 from domains.ventas.strategies import CanalVentaStrategy
+from shared.exceptions import ClienteInvalidoError
 
 
 class VentasService:
@@ -56,5 +57,5 @@ class VentasService:
         return strategy.calcular_total(subtotal=subtotal)
 
     def _validar_cliente(self, cliente_id: int) -> None:
-        pass
-        # TODO
+        if not self._clientes_repo.get_by_id(id):
+            raise ClienteInvalidoError("El cliente seleccionado no es valido")
