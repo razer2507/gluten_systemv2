@@ -1,10 +1,10 @@
 from datetime import date
 
+from domains.clientes.repository import ClientesRepository
 from domains.ventas.repository import (  # noqa: F401
     PostgresVentasRepository,
     VentasRepository,
 )
-from domains.clientes.repository import ClientesRepository
 from domains.ventas.service import VentasService
 from domains.ventas.strategies import (
     CanalPedidosYaStrategy,  # noqa: F401, RUF100
@@ -20,11 +20,11 @@ service = VentasService(
 
 def test_registrar_venta():
     # la ui devuelve como que una vaina asi
-    venta = {
+    venta_valida = {
         "cliente_id": 1,
         "fecha": date.today(),
         'canal':CanalPedidosYaStrategy(),  
-        "items":[
+        "productos":[
             {
             'producto_id':1,
             'cantidad':2,
@@ -37,6 +37,5 @@ def test_registrar_venta():
             }
             ]
     }
-
-    id_venta = service.registrar_venta(**venta)
-    assert(bool(repository_postgres.get_by_id(id_venta)))
+    id_venta_valida = service.registrar_venta(**venta_valida)
+    assert(bool(repository_postgres.get_by_id(id_venta_valida)))
