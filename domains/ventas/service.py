@@ -1,11 +1,5 @@
 # domains/ventas/service.py
-from datetime import date
 
-from domains.clientes.repository import ClientesRepository
-from domains.ventas.models import DetalleVenta, Venta
-from domains.ventas.repository import VentasRepository
-from domains.ventas.strategies import CanalVentaStrategy
-from shared.exceptions import ClienteInvalidoError
 
 
 class VentasService:
