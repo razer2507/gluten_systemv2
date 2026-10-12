@@ -9,7 +9,7 @@ repo = PostgresVentasRepository()
 def test_insert():
 
     venta_fake = Venta(
-        fecha="2026-08-08",
+        fecha=date.today(),
         cliente_id=1,
         total=20,
         productos=[
@@ -19,11 +19,15 @@ def test_insert():
         estado="pagado",
     )
     id_venta = repo.insert(venta_fake)
-    print(repo.get_by_id(id_venta))
     data = repo.get_by_id(id_venta)
+    print(data)
     assert data is not None
     assert data.id == id_venta
-    assert data.fecha == date.fromisoformat(venta_fake.fecha)
+    if isinstance(venta_fake.fecha,str):
+        assert data.fecha == date.fromisocalendar(venta_fake.fecha)
+    else:
+        assert data.fecha == venta_fake.fecha
+        
     assert data.cliente_id == venta_fake.cliente_id
     assert data.total == venta_fake.total
     assert data.estado == venta_fake.estado
