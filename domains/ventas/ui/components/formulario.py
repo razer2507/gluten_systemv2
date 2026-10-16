@@ -1,6 +1,6 @@
 import flet as ft
 
-from shared.ui.components import GlutenNormalText
+from shared.ui.components import GlutenNormalText,GlutenTextInput
 
 
 class FormularioVentasComponent(ft.Container):
@@ -14,14 +14,8 @@ class FormularioVentasComponent(ft.Container):
             controls=[
                 ft.Row(
                     controls=[
-                        GlutenNormalText('Fecha'),
-                        GlutenNormalText('Cliente'),
-                        GlutenNormalText('Estado')
-                    ]
-                ),
-                ft.Row(
-                    controls=[
-    
+                        GlutenTextInput(etiqueta='Fecha'),
+                        GlutenTextInput(etiqueta='Estado')
                     ]
                 )
             ]
