@@ -177,4 +177,3 @@ class PostgresVentasRepository(VentasRepository):
         with self._get_conn() as conn, conn.cursor() as cursor:
             query = "DELETE FROM ventas WHERE id=%(id)s"
             cursor.execute(query, {"id": venta.id})
-
