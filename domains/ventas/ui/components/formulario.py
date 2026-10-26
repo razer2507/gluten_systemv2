@@ -2,12 +2,14 @@ import flet as ft
 
 from shared.ui.components import (
     GlutenButton,
+    GlutenDatePickerDialog,
     GlutenDropdownField,
     GlutenDropdownInput,
     GlutenEntryField,
     GlutenNormalText,
     GlutenTextInput,
-    GlutenDatePickerDialog,
+    GlutenDatePickerField,
+    GlutenDatePickerInput,
 )
 
 
@@ -30,15 +32,10 @@ class FormularioVentasComponent(ft.Container):
 
     def _construir_elementos_formulario(self):
 
-        self.fecha_input = ft.Row(
-            spacing=10,
-            controls=[
-                GlutenEntryField(hint_text="fecha"),
-                ft.IconButton(
-                    ft.Icons.DATE_RANGE,
-                    on_click=lambda _ :self.pagina_principal.show_dialog(GlutenDatePickerDialog()),
-                ),
-            ],
+        self.fecha_input = GlutenDatePickerInput(
+            pagina_principal=self.pagina_principal,
+            pista_texto="MM/DD/YY",
+            etiqueta="Fecha",
         )
         self.estado_input = GlutenDropdownInput(
             pista_texto="estado", etiqueta="Estado", items=self.estados
@@ -58,12 +55,12 @@ class FormularioVentasComponent(ft.Container):
         columna_principal = ft.Column(
             controls=[
                 ft.Row(
-                    spacing=25,
+                    spacing=10,
                     controls=[
-                        self.fecha_input,
                         self.estado_input,
                         self.cliente_dropdown,
                         self.productos_dropdown,
+                        self.fecha_input
                     ],
                 ),
                 ft.Row(controls=self.boton),
@@ -73,7 +70,6 @@ class FormularioVentasComponent(ft.Container):
         return columna_principal
 
     def _procesar_venta(self):
-
         self.on_guardar_venta_click(
             {
                 "fecha": self.fecha_input.valor,
@@ -94,6 +90,7 @@ if __name__ == "__main__":
         # Callback simulado para verificar qué datos captura el botón
         def callback_simulado(data):
             print(f"venta con datos {data} GUARDADA CON EXITO.")
+
         # Instanciamos solo el componente que queremos probar
         componente = FormularioVentasComponent(
             pagina_principal=page,

@@ -1,9 +1,8 @@
+from datetime import datetime
+
 import flet as ft
 
 from shared.ui.fonts import fonts
-import pdb
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 
 class GlutenTextSyle(ft.TextStyle):
@@ -27,7 +26,7 @@ class GlutenEntryField(ft.TextField):
             bgcolor=ft.Colors.TRANSPARENT,
             filled=False,
             border_color=ft.Colors.ORANGE_400,
-            **kwargs,
+            **kwargs
         )
 
 
@@ -56,7 +55,7 @@ class GlutenDatePickerDialog(ft.DatePicker):
     def __init__(
         self,
         start_date: datetime = datetime(year=2024, month=1, day=1),
-        end_date: datetime = datetime.now(),
+        end_date: datetime = datetime.now(),  # noqa: B008
         on_confirmar_fecha: callable() = None,
         **kwargs,
     ):
@@ -68,8 +67,27 @@ class GlutenDatePickerDialog(ft.DatePicker):
 
 
 class GlutenDatePickerField(ft.Row):
-    def __init__(self, pista: str = "entrada", **kwargs):
+    def __init__(self, pagina_principal: ft.Page, pista: str = "entrada", **kwargs):
         super().__init__(**kwargs)
+        self.pagina_principal = pagina_principal
+        self.entrada = GlutenEntryField(hint_text=pista,width=200,read_only=True)
+        self.dialog_fecha = GlutenDatePickerDialog(
+            on_confirmar_fecha=self.on_click_fecha
+        )
+        self.boton_fecha = ft.IconButton(
+            ft.Icons.DATE_RANGE,
+            icon_color=ft.Colors.ORANGE_400,
+            on_click=lambda _: self.pagina_principal.show_dialog(self.dialog_fecha),
+        )
+        self.spacing = 1
+        self.controls = [self.entrada, self.boton_fecha]
+
+    def on_click_fecha(self, e: ft.Event[ft.DatePicker]) -> None:
+        self.entrada.value = e.control.value.strftime("%m/%d/%Y")
+    
+    @property
+    def valor(self) -> ft.TextField.value:
+        return self.entrada.value
 
 
 class GlutenTextInput(ft.Container):
@@ -110,10 +128,25 @@ class GlutenDropdownInput(GlutenTextInput):
     def valor(self):
         return self.entrada.value
 
+class GlutenDatePickerInput(GlutenTextInput):
+    def __init__(self,pagina_principal:ft.Page,**kwargs):
+        super().__init__(**kwargs)
+        self.entrada = GlutenDatePickerField(pagina_principal=pagina_principal,pista=self.pista_texto)
+        self.content = self._construir_input()
+        self.width = 250
+    
+    def _construir_input(self):
+        return ft.Column(
+            spacing=self.spacing, controls=[self.etiqueta_texto, self.entrada]
+        )
+    @property
+    def valor(self):
+        return self.entrada.valor
+
 
 class GlutenButton(ft.TextButton):
     def __init__(
-        self, text: str = "Boton", icon: ft.Icon = ft.Icons.SHOP_2_OUTLINED, **kwargs
+        self, text: str = "Boton", icon: ft.Icon = ft.Icons.CHECK_OUTLINED, **kwargs
     ):
         self.texto_boton = text
         super().__init__(
