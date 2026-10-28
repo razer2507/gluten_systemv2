@@ -2,24 +2,20 @@ import flet as ft
 
 from shared.ui.components import (
     GlutenButton,
-    GlutenDatePickerDialog,
-    GlutenDropdownField,
-    GlutenDropdownInput,
-    GlutenEntryField,
-    GlutenNormalText,
-    GlutenTextInput,
-    GlutenDatePickerField,
     GlutenDatePickerInput,
+    GlutenDropdownInput,
+    GlutenProductsPickerField
 )
+from shared.utils import to_dropdown_option
 
 
 class FormularioVentasComponent(ft.Container):
     def __init__(
         self,
         pagina_principal: ft.Page,
-        clientes: list,
-        productos: list,
-        estados: list,
+        clientes: dict | list,
+        productos: dict | list,
+        estados: dict | list,
         on_guardar_venta_click: callable,
     ):
         super().__init__()
@@ -43,12 +39,14 @@ class FormularioVentasComponent(ft.Container):
         self.cliente_dropdown = GlutenDropdownInput(
             pista_texto="cliente",
             etiqueta="Cliente",
-            items=self.clientes,
+            items=to_dropdown_option(
+                keys=[i["id"] for i in self.clientes],
+                values=[i["nombre"] for i in self.clientes],
+            ),
         )
-        self.productos_dropdown = GlutenDropdownInput(
-            pista_texto="producto",
-            etiqueta="Productos",
-            items=self.productos,
+        self.productos_dropdown = GlutenProductsPickerField(
+            pagina_principal=self.pagina_principal,
+            productos=self.productos
         )
         self.boton = GlutenButton(text="Registar", on_click=self._procesar_venta)
 
@@ -60,7 +58,7 @@ class FormularioVentasComponent(ft.Container):
                         self.estado_input,
                         self.cliente_dropdown,
                         self.productos_dropdown,
-                        self.fecha_input
+                        self.fecha_input,
                     ],
                 ),
                 ft.Row(controls=self.boton),
@@ -94,8 +92,14 @@ if __name__ == "__main__":
         # Instanciamos solo el componente que queremos probar
         componente = FormularioVentasComponent(
             pagina_principal=page,
-            clientes=["Maria Vecina piso 1", "Rusmilena"],
-            productos=["Mini lunchi", "Pan trenzado", "Pan de masa Madre premium"],
+            clientes=[
+                {"id": 1, "nombre": "paul ramirez", "referencia": "venecia"},
+                {"id": 2, "nombre": "rusmilena", "referencia": "venecia"},
+            ],
+            productos=[
+                {"id": 1, 'nombre': 'Maxi combo', 'categoria': 'panaderia'},
+                {'id':2,'nombre':'Mini Lunch','categoria':'panaderia'}
+            ],
             estados=["Pendiente", "Pagado"],
             on_guardar_venta_click=callback_simulado,
         )

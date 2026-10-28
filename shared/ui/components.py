@@ -3,6 +3,7 @@ from datetime import datetime
 import flet as ft
 
 from shared.ui.fonts import fonts
+from shared.utils import to_dropdown_option
 
 
 class GlutenTextSyle(ft.TextStyle):
@@ -26,8 +27,12 @@ class GlutenEntryField(ft.TextField):
             bgcolor=ft.Colors.TRANSPARENT,
             filled=False,
             border_color=ft.Colors.ORANGE_400,
-            **kwargs
+            **kwargs,
         )
+
+    @property
+    def valor(self):
+        return self.value
 
 
 class GlutenDropdownField(ft.Dropdown):
@@ -44,11 +49,25 @@ class GlutenDropdownField(ft.Dropdown):
         )
         self.options = self.construir_opciones(items)
 
-    def construir_opciones(self, items: list) -> list[ft.DropdownOption]:
-        return [
-            ft.DropdownOption(key=item, content=GlutenNormalText(size=12, value=item))
-            for item in items
-        ]
+    def construir_opciones(self, items: list(tuple) | list) -> list[ft.DropdownOption]:
+        if isinstance(items, list) and all(isinstance(i, tuple) for i in items):
+            return [
+                ft.DropdownOption(
+                    key=item[0], content=GlutenNormalText(size=12, value=item[1])
+                )
+                for item in items
+            ]
+        else:
+            return [
+                ft.DropdownOption(
+                    key=item, content=GlutenNormalText(size=12, value=item)
+                )
+                for item in items
+            ]
+
+    @property
+    def valor(self):
+        return self.value
 
 
 class GlutenDatePickerDialog(ft.DatePicker):
@@ -66,11 +85,49 @@ class GlutenDatePickerDialog(ft.DatePicker):
         self.on_change = on_confirmar_fecha
 
 
+class GlutenProductsDialog(ft.AlertDialog):
+    def __init__(
+        self,
+        productos: list(dict),
+        titulo: str = "Elija a continuacion los productos ",
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.productos = productos
+        self.entrada = GlutenDropdownInput(
+            items=to_dropdown_option(
+                keys=[i["id"] for i in self.productos],
+                values=[i["nombre"] for i in self.productos],
+            )
+        )
+        self.productos_seleccionados = []
+        self.modal = True
+        self.content = self._construir_formulario_productos()
+        self.actions = [
+            ft.TextButton(
+                "Agregar Producto", style=GlutenTextSyle(), on_click=lambda e: self._agregar_producto()
+            )
+        ]
+
+    def _construir_formulario_productos(self):
+        self.fila_1 = ft.Row(controls=self.entrada)
+        self.fila_2 = ft.Column(controls=[])
+        columna_principal = ft.Column(controls=[self.fila_1,self.fila_2])
+        return columna_principal
+
+    def _agregar_producto(self):
+        self.productos_seleccionados.append({
+            'id_producto':self.entrada.valor
+        })
+        self.fila_2.controls.append(ft.Row(
+            controls=[ft.Text(self.entrada.valor),ft.Text('Producto')]
+        ))
+
 class GlutenDatePickerField(ft.Row):
     def __init__(self, pagina_principal: ft.Page, pista: str = "entrada", **kwargs):
         super().__init__(**kwargs)
         self.pagina_principal = pagina_principal
-        self.entrada = GlutenEntryField(hint_text=pista,width=200,read_only=True)
+        self.entrada = GlutenEntryField(hint_text=pista, width=200, read_only=True)
         self.dialog_fecha = GlutenDatePickerDialog(
             on_confirmar_fecha=self.on_click_fecha
         )
@@ -84,7 +141,25 @@ class GlutenDatePickerField(ft.Row):
 
     def on_click_fecha(self, e: ft.Event[ft.DatePicker]) -> None:
         self.entrada.value = e.control.value.strftime("%m/%d/%Y")
-    
+
+    @property
+    def valor(self) -> ft.TextField.value:
+        return self.entrada.value
+
+class GlutenProductsPickerField(ft.Row):
+    def __init__(self, pagina_principal: ft.Page,productos:list[dict],pista: str = "entrada", **kwargs):
+        super().__init__(**kwargs)
+        self.pagina_principal = pagina_principal
+        self.entrada = GlutenEntryField(hint_text=pista, width=200, read_only=True)
+        self.dialog_productos = GlutenProductsDialog(productos=productos)
+        self.boton_add = ft.IconButton(
+            ft.Icons.ADD,
+            icon_color=ft.Colors.ORANGE_400,
+            on_click=lambda _: self.pagina_principal.show_dialog(self.dialog_productos),
+        )
+        self.spacing = 1
+        self.controls = [self.entrada, self.boton_add]
+
     @property
     def valor(self) -> ft.TextField.value:
         return self.entrada.value
@@ -110,7 +185,7 @@ class GlutenTextInput(ft.Container):
 
     @property
     def valor(self):
-        return self.entrada.value
+        return self.entrada.valor
 
     def _construir_input(self) -> ft.Column:
         return ft.Column(
@@ -126,19 +201,23 @@ class GlutenDropdownInput(GlutenTextInput):
 
     @property
     def valor(self):
-        return self.entrada.value
+        return self.entrada.valor
+
 
 class GlutenDatePickerInput(GlutenTextInput):
-    def __init__(self,pagina_principal:ft.Page,**kwargs):
+    def __init__(self, pagina_principal: ft.Page, **kwargs):
         super().__init__(**kwargs)
-        self.entrada = GlutenDatePickerField(pagina_principal=pagina_principal,pista=self.pista_texto)
+        self.entrada = GlutenDatePickerField(
+            pagina_principal=pagina_principal, pista=self.pista_texto
+        )
         self.content = self._construir_input()
         self.width = 250
-    
+
     def _construir_input(self):
         return ft.Column(
             spacing=self.spacing, controls=[self.etiqueta_texto, self.entrada]
         )
+
     @property
     def valor(self):
         return self.entrada.valor
