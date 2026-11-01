@@ -4,7 +4,7 @@ from shared.ui.components import (
     GlutenButton,
     GlutenDatePickerInput,
     GlutenDropdownInput,
-    GlutenProductsPickerField
+    GlutenProductsPickerInput,
 )
 from shared.utils import to_dropdown_option
 
@@ -44,9 +44,11 @@ class FormularioVentasComponent(ft.Container):
                 values=[i["nombre"] for i in self.clientes],
             ),
         )
-        self.productos_dropdown = GlutenProductsPickerField(
+        self.productos_dropdown = GlutenProductsPickerInput(
             pagina_principal=self.pagina_principal,
-            productos=self.productos
+            productos=self.productos,
+            etiqueta="Productos",
+            pista_texto="Elegir Productos",
         )
         self.boton = GlutenButton(text="Registar", on_click=self._procesar_venta)
 
@@ -97,8 +99,8 @@ if __name__ == "__main__":
                 {"id": 2, "nombre": "rusmilena", "referencia": "venecia"},
             ],
             productos=[
-                {"id": 1, 'nombre': 'Maxi combo', 'categoria': 'panaderia'},
-                {'id':2,'nombre':'Mini Lunch','categoria':'panaderia'}
+                {"id": 1, "nombre": "Maxi combo", "categoria": "panaderia"},
+                {"id": 2, "nombre": "Mini Lunch", "categoria": "panaderia"},
             ],
             estados=["Pendiente", "Pagado"],
             on_guardar_venta_click=callback_simulado,
