@@ -1,5 +1,5 @@
-anyio==4.15.1
-application-utility==1.4.0
+anyio
+#application-utility
 arandr==0.1.11
 argcomplete==3.7.2
 argon2-cffi==25.1.0
@@ -113,7 +113,6 @@ sortedcontainers==2.4.0
 soupsieve==2.9.2
 stack_data==0.6.4.dev0+g53501eb8b.d20251216
 streamlink==8.5.0
-TBB @ file:///build/onetbb/src/build/python/python_build
 terminator==2.1.5
 tinycss2==1.5.1
 tornado==6.5.8

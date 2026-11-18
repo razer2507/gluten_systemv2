@@ -1,10 +1,12 @@
 import flet as ft
 
+from domains.ventas.strategies import CanalFactory
 from shared.ui.components import (
     GlutenButton,
     GlutenDatePickerInput,
     GlutenDropdownInput,
     GlutenProductsPickerInput,
+    GlutenNormalText
 )
 from shared.utils import to_dropdown_option
 
@@ -16,28 +18,31 @@ class FormularioVentasComponent(ft.Container):
         clientes: dict | list,
         productos: dict | list,
         estados: dict | list,
-        on_guardar_venta_click: callable,
+        on_guardar_venta_click: callable(),
     ):
         super().__init__()
         self.pagina_principal = pagina_principal
         self.clientes = clientes
         self.productos = productos
         self.estados = estados
+        self.canales = CanalFactory()
         self.content = self._construir_elementos_formulario()
         self.on_guardar_venta_click = on_guardar_venta_click
+        self.border = ft.Border.all(color=ft.Colors.ORANGE_400)
+        self.width = 900
+        self.height = 500
 
     def _construir_elementos_formulario(self):
-
         self.fecha_input = GlutenDatePickerInput(
             pagina_principal=self.pagina_principal,
             pista_texto="MM/DD/YY",
             etiqueta="Fecha",
         )
         self.estado_input = GlutenDropdownInput(
-            pista_texto="estado", etiqueta="Estado", items=self.estados
+            pista_texto="Contado o Credito?", etiqueta="Estado", items=self.estados
         )
         self.cliente_dropdown = GlutenDropdownInput(
-            pista_texto="cliente",
+            pista_texto="Elegir un cliente",
             etiqueta="Cliente",
             items=to_dropdown_option(
                 keys=[i["id"] for i in self.clientes],
@@ -48,67 +53,77 @@ class FormularioVentasComponent(ft.Container):
             pagina_principal=self.pagina_principal,
             productos=self.productos,
             etiqueta="Productos",
-            pista_texto="Elegir Productos",
+            pista_texto="Seleccione productos-->",
         )
-        self.boton = GlutenButton(text="Registar", on_click=self._procesar_venta)
+        self.canal_dropdown = GlutenDropdownInput(
+            items=list(self.canales.canales.keys()),
+            etiqueta="Canal de Venta",
+            pista_texto="Elegir Canal de Venta",
+        )
+        self.boton = GlutenButton(text="Registar Venta", on_click=self._procesar_venta)
 
         columna_principal = ft.Column(
+            alignment=ft.MainAxisAlignment.START,
+            spacing=15,
             controls=[
                 ft.Row(
-                    spacing=10,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=20,
                     controls=[
-                        self.estado_input,
                         self.cliente_dropdown,
+                        self.canal_dropdown,
                         self.productos_dropdown,
-                        self.fecha_input,
                     ],
                 ),
-                ft.Row(controls=self.boton),
-            ]
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=20,
+                    controls=[self.estado_input, self.fecha_input],
+                ),
+                ft.Row(alignment=ft.MainAxisAlignment.CENTER, controls=self.boton),
+            ],
         )
 
         return columna_principal
 
     def _procesar_venta(self):
-        self.on_guardar_venta_click(
-            {
-                "fecha": self.fecha_input.valor,
-                "estado": self.estado_input.valor,
-                "cliente": self.cliente_dropdown.valor,
-                "productos": self.productos_dropdown.valor,
-            }
-        )
-
-
-# --- BLOQUE DE PRUEBA RÁPIDA DE LA UI 🧪 ---
-if __name__ == "__main__":
-
-    def main_test(page: ft.Page):
-        page.title = "Prueba Aislada: Formulario Ventas"
-        page.bgcolor = ft.Colors.BLACK
-
-        # Callback simulado para verificar qué datos captura el botón
-        def callback_simulado(data):
-            print(f"venta con datos {data} GUARDADA CON EXITO.")
-
-        # Instanciamos solo el componente que queremos probar
-        componente = FormularioVentasComponent(
-            pagina_principal=page,
-            clientes=[
-                {"id": 1, "nombre": "paul ramirez", "referencia": "venecia"},
-                {"id": 2, "nombre": "rusmilena", "referencia": "venecia"},
-            ],
-            productos=[
-                {"id": 1, "nombre": "Maxi combo", "categoria": "panaderia"},
-                {"id": 2, "nombre": "Mini Lunch", "categoria": "panaderia"},
-            ],
-            estados=["Pendiente", "Pagado"],
-            on_guardar_venta_click=callback_simulado,
-        )
-        page.add(componente)
-
-    # Lanzas únicamente este componente en ventana
-ft.app(target=main_test)
-
-
-# TODO:creacion de fecha dialog, y envio de datos a servicio de ventas
+        try:
+            res_id = self.on_guardar_venta_click(
+                {
+                    "fecha": self.fecha_input.valor,
+                    "estado": self.estado_input.valor,
+                    "cliente_id": self.cliente_dropdown.valor,
+                    "productos": self.productos_dropdown.productos,
+                    "canal": self.canal_dropdown.valor,
+                }
+            )
+            msg = f"Venta Registrada con exito({self.productos_dropdown.valor}$) -> ID {res_id}"
+            success = True
+        except Exception as e:
+            msg = f"Error al registrar la venta -> {e}"
+            success = False
+        finally:
+            color = ft.Colors.GREEN_700 if success else ft.Colors.RED_700
+            icon = ft.Icons.CHECK if success else ft.Icons.ALARM
+            self.content.controls.append(
+                ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=
+                ft.Chip(
+                        label=ft.Text(msg,color=color),
+                        leading=icon,
+                        bgcolor=ft.Colors.BLACK,
+                        disabled_color=ft.Colors.GREEN_100,
+                        autofocus=True,
+                        delete_icon = ft.Icons.DELETE,
+                        on_delete= lambda _ : self.content.controls.pop()
+                    )
+            )
+            )
+            if success:
+                self.fecha_input.limpiar_entrada()
+                self.estado_input.limpiar_entrada()
+                self.cliente_dropdown.limpiar_entrada()
+                self.productos_dropdown.limpiar_entrada()
+                self.canal_dropdown.limpiar_entrada()
+                self.content.update()

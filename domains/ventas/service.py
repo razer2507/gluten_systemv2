@@ -4,7 +4,7 @@ from datetime import date
 from domains.clientes.repository import ClientesRepository
 from domains.ventas.models import DetalleVenta, Venta
 from domains.ventas.repository import VentasRepository
-from domains.ventas.strategies import CanalVentaStrategy
+from domains.ventas.strategies import CanalFactory, CanalVentaStrategy
 from shared.exceptions import ClienteInvalidoError
 
 
@@ -12,19 +12,20 @@ class VentasService:
     """Servicio de aplicación para el dominio de ventas."""
 
     def __init__(
-        self, venta_repo: VentasRepository, clientes_repo: ClientesRepository
+        self, venta_repo: VentasRepository, clientes_repo: ClientesRepository 
     ) -> None:
         """Inyecta de forma única el contrato del repositorio de ventas."""
         self._venta_repo = venta_repo
         self._clientes_repo = clientes_repo
+        self.canal_factory = CanalFactory()
 
     def registrar_venta(
         self,
         cliente_id: int,
         productos: list[dict],
-        canal: CanalVentaStrategy,
+        canal: str,
         fecha: date | str,
-        estado: str = "en deuda",
+        estado: str = "en deuda"
     ) -> Venta:
         """Orquesta la creación de una venta delegando el cálculo a la estrategia del canal.
         Args:
@@ -35,7 +36,11 @@ class VentasService:
         """
         detalle_venta = [DetalleVenta.from_dict(data) for data in productos]
         subtotal = sum(item.subtotal_item for item in detalle_venta)
-        total_calculado = self._resolver_estrategia(subtotal=subtotal, strategy=canal)
+        canal = self.canal_factory.obtener_canal(canal_nombre=canal)
+        total_calculado = self._resolver_estrategia(
+            subtotal=subtotal,
+            strategy=canal,
+        )
         nueva_venta = Venta(
             fecha=fecha,
             cliente_id=cliente_id,
@@ -44,8 +49,11 @@ class VentasService:
             productos=detalle_venta,
         )
 
-        #Persistir en la base de datos
+        # Persistir en la base de datos
+            
         return self._venta_repo.insert(nueva_venta)
+        
+
 
     def obtener_venta(self, venta_id: int) -> Venta | None:
         return self._venta_repo.get_by_id(venta_id)
@@ -57,5 +65,7 @@ class VentasService:
         return strategy.calcular_total(subtotal=subtotal)
 
     def _validar_cliente(self, cliente_id: int) -> None:
-        if not self._clientes_repo.get_by_id(id):
-            raise ClienteInvalidoError("El cliente seleccionado no es valido")
+
+        # if not self._clientes_repo.get_by_id(id):
+        #   raise ClienteInvalidoError("El cliente seleccionado no es valido")
+        pass

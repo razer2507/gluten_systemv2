@@ -57,6 +57,7 @@ class Venta:
 
   
     def __post_init__(self) -> None:
+        print(self.__dict__)
         self._validar_estado()
         self._validar_fecha()
         self._validar_productos()
@@ -65,12 +66,17 @@ class Venta:
 
 
     def _validar_estado(self) -> None:
+        if self.estado is None:
+            raise EstadoInvalidoError('No se especifico un estado')
         if not isinstance(self.estado,str):
             raise EstadoInvalidoError("El estado de la venta no es un texto")
 
     def _validar_fecha(self) -> None:
+        if self.fecha is None:
+            raise FechaInvalidaError('No se especifico una fecha')
         if not isinstance(self.fecha,str | date):
             raise FechaInvalidaError('La fecha no es un dato valido')
+        print(self.fecha)
         if isinstance(self.fecha, str):
             try:
                 date.fromisoformat(self.fecha)
@@ -86,6 +92,8 @@ class Venta:
             )
 
     def _validar_total(self) -> None:
+        if self.total is None:
+            raise TotalInvalidoError('No hay un total especificado')
         try:
             float(self.total)
         except ValueError:
@@ -139,6 +147,7 @@ class DetalleVenta:
         return self.cantidad * self.precio_unitario
 
     def __post_init__(self):
+        print(self.__dict__)
         self._validar_cantidad()
         self._validar_precio_unitario()
 
@@ -151,7 +160,7 @@ class DetalleVenta:
 
     def _validar_precio_unitario(self):
         try:
-            float(self.precio_unitario)
+            self.precio_unitario = float(self.precio_unitario)
         except ValueError:
             raise VentaSinProductosError("El precio unitario no es un decimal valido.")
 
@@ -160,6 +169,11 @@ class DetalleVenta:
             raise VentaSinProductosError("El precio unitario debe ser un numero positivo")
 
     def _validar_cantidad(self):
+        try:
+            self.cantidad = int(self.cantidad)
+        except ValueError:
+            raise VentaSinProductosError()
+
         if not isinstance(self.cantidad,int):
             raise VentaSinProductosError()
         if not self.cantidad >= 1:

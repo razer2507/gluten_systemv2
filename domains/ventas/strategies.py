@@ -26,3 +26,16 @@ class CanalPedidosYaStrategy(CanalVentaStrategy):
         return subtotal - (subtotal * self.descuento)
 
 
+
+class CanalFactory:
+    def __init__(self):
+        self.canales = {
+            'pedidosya':CanalPedidosYaStrategy,
+            'presencial':CanalPedidosYaStrategy
+        }
+    
+    def obtener_canal(self,canal_nombre:str = 'presencial'):
+        return self.canales.get(canal_nombre)()
+    
+    def obtener_canales(self):
+        return self.canales

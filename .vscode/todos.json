@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "tasks": [
+    {
+      "id": "d6bfda2c-4eb1-4947-9e8d-8d8a6131372f",
+      "title": "Conectar el formulario a la view de ventas",
+      "done": false,
+      "priority": "high",
+      "createdAt": 1793744900690,
+      "updatedAt": 1793744918445,
+      "order": 1
+    }
+  ]
+}

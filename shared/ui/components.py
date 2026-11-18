@@ -7,16 +7,14 @@ from shared.utils import to_dropdown_option
 
 
 class GlutenTextSyle(ft.TextStyle):
-    def __init__(self, size: int = 14, **kwargs):
-        super().__init__(
-            font_family=fonts["BebasNeue"], color=ft.Colors.WHITE, **kwargs
-        )
+    def __init__(self, size: int = 14, color: ft.Colors = ft.Colors.WHITE, **kwargs):
+        super().__init__(font_family=fonts["BebasNeue"], color=color, **kwargs)
         self.size = size
 
 
 class GlutenNormalText(ft.Text):
-    def __init__(self, **kwargs):
-        estilo = GlutenTextSyle()
+    def __init__(self, size: int = 14, **kwargs):
+        estilo = GlutenTextSyle(size)
         super().__init__(style=estilo, **kwargs)
 
     @property
@@ -25,8 +23,10 @@ class GlutenNormalText(ft.Text):
 
 
 class GlutenEntryField(ft.TextField):
-    def __init__(self, size_text: int = 14, **kwargs):
-        self.estilo = GlutenTextSyle(size=size_text)
+    def __init__(
+        self, size_text: int = 14, color: ft.Colors = ft.Colors.WHITE, **kwargs
+    ):
+        self.estilo = GlutenTextSyle(size=size_text, color=color)
         super().__init__(
             text_style=self.estilo,
             bgcolor=ft.Colors.TRANSPARENT,
@@ -54,7 +54,7 @@ class GlutenDropdownField(ft.Dropdown):
         )
         self.options = self.construir_opciones(items)
 
-    def construir_opciones(self, items: list(tuple) | list) -> list[ft.DropdownOption]:
+    def construir_opciones(self, items: list) -> list[ft.DropdownOption]:
         if isinstance(items, list) and all(isinstance(i, tuple) for i in items):
             return [
                 ft.DropdownOption(
@@ -73,6 +73,7 @@ class GlutenDropdownField(ft.Dropdown):
     @property
     def valor(self):
         return self.value
+    
 
 
 class GlutenDatePickerDialog(ft.DatePicker):
@@ -103,6 +104,8 @@ class GlutenProductsDialog(ft.AlertDialog):
         self.bgcolor = ft.Colors.BLACK
         self.pagina_principal = pagina_principal
         self.productos = productos
+        self.productos_vendidos = []
+        self.productos_seleccionados_ids = []
         self.entrada = GlutenDropdownInput(
             items=to_dropdown_option(
                 keys=[i["id"] for i in self.productos],
@@ -110,29 +113,40 @@ class GlutenProductsDialog(ft.AlertDialog):
             ),
             etiqueta="Productos",
             pista_texto="Elegir Productos",
-            on_select=self._agregar_producto,
+            on_select=self._agregar_producto_a_tabla,
         )
-        self.productos_vendidos = []
-        self.productos_seleccionados_ids = []
         self.modal = True
+        self.total_texto = GlutenNormalText(value=f"{0.0}$", size=25)
         self.content = self._construir_formulario_productos()
         self.actions = [
             ft.TextButton(
                 "Cerrar",
-                style=GlutenTextSyle(),
+                style=GlutenTextSyle(color=ft.Colors.RED_500),
                 on_click=lambda e: [
                     self._obtener_data_productos_seleccionados(),
                     self.pagina_principal.pop_dialog(),
                 ],
-            )
+            ),
+            ft.TextButton(
+                "Limpiar formulario",
+                style=GlutenTextSyle(),
+                on_click=lambda e: self._reiniciar_formulario(),
+            ),
         ]
         self.actualizar_total = actualizar_total
 
     def _construir_formulario_productos(self):
-        self.fila_1 = ft.Row(controls=self.entrada)
+        self.fila_1 = ft.Row(
+            spacing=30,
+            controls=[
+                self.entrada,
+                GlutenNormalText(value="TOTAL: ", size=18),
+                self.total_texto,
+            ],
+        )
         self.fila_2 = ft.DataTable(
             columns=[
-                ft.DataColumn(label=GlutenNormalText(value="id")),
+                ft.DataColumn(label=GlutenNormalText(value="producto_id")),
                 ft.DataColumn(label=GlutenNormalText(value="nombre")),
                 ft.DataColumn(label=GlutenNormalText(value="cantidad")),
                 ft.DataColumn(label=GlutenNormalText(value="precio_unitario")),
@@ -142,69 +156,100 @@ class GlutenProductsDialog(ft.AlertDialog):
         columna_principal = ft.Column(width=500, controls=[self.fila_1, self.fila_2])
         return columna_principal
 
-    def _buscar_producto_por_id(self, id: int) -> str:
+    def _buscar_producto_por_id(self, id: int) -> dict:
         for producto in self.productos:
             if producto["id"] == int(id):
                 return producto
 
-    def _calcular_total(self):
+    def _calcular_total(self) -> float:
+        if not self.productos_vendidos:
+            return 0.0
         suma = float(
             sum(
                 [
-                    float(producto["cantidad"]) * float(producto["precio_unitario"])
+                    (
+                        float(producto["cantidad"]) * float(producto["precio_unitario"])
+                        if producto["cantidad"] and producto["precio_unitario"]
+                        else 0.0
+                    )
                     for producto in self.productos_vendidos
                 ]
             )
         )
         return suma
 
-    def _obtener_data_productos_seleccionados(self):
-        cols = [i.label for i in self.fila_2.columns]
+    def _on_escribir_precio_cantidad(self, e: ft.Event[ft.TextField]) -> None:
+        total = 0.0
+        try:
+            for row in self.fila_2.rows:
+                campo_cantidad = row.cells[2].content.valor
+                campo_precio_unit = row.cells[3].content.valor
+
+                val_cantidad = float(campo_cantidad) if campo_cantidad else 0.0
+                val_precio_unit = float(campo_precio_unit) if campo_precio_unit else 0.0
+
+                total += val_cantidad * val_precio_unit
+
+        except ValueError:
+            return
+
+        self.total_texto.value = f"{total}$"
+        self.total_texto.update()
+        self.actualizar_total(total)
+
+    def _obtener_data_productos_seleccionados(self) -> None:
+        columnas = [i.label for i in self.fila_2.columns]
         for row in self.fila_2.rows:
             row_data = {}
-            for col, cell in zip(cols, row.cells):
+            celdas = row.cells
+            for col, cell in zip(columnas, celdas):
                 row_data[col.valor] = cell.content.valor
-            if not self.producto_es_duplicado(id=int(row_data["id"])):
-                self.productos_vendidos.append(row_data)
-        self.actualizar_total(self._calcular_total())
-
-    def producto_es_duplicado(self, id) -> bool:
-        if id in [producto["id"] for producto in self.productos_vendidos]:
-            return True
+            self.productos_vendidos.append(row_data)
 
     def _producto_ha_sido_seleccionado(self, id_producto: int) -> bool:
         if id_producto in self.productos_seleccionados_ids:
             return True
 
-    def _agregar_producto(self, e: ft.Event[ft.Dropdown]) -> None:
-        if self._producto_ha_sido_seleccionado(id_producto=int(e.control.value)):
-            return
-        producto = self._buscar_producto_por_id(id=int(e.control.value))
-        self.productos_seleccionados_ids.append(producto["id"])
-        self._agregar_data_tabla(id=producto["id"], nombre=producto["nombre"])
-
-    def _agregar_data_tabla(self, id, nombre) -> None:
-        self.fila_2.rows.append(
-            ft.DataRow(
-                cells=[
-                    ft.DataCell(GlutenNormalText(value=id)),
-                    ft.DataCell(GlutenNormalText(value=nombre)),
-                    ft.DataCell(
-                        GlutenEntryField(
-                            hint_text="cantidad", width=80, height=35, size_text=12
-                        )
-                    ),
-                    ft.DataCell(
-                        GlutenEntryField(
-                            hint_text="precio unitario",
-                            width=80,
-                            height=35,
-                            size_text=12,
-                        )
-                    ),
-                ]
+    def _agregar_producto_a_tabla(self, e: ft.Event[ft.Dropdown]) -> None:
+        id = e.control.value
+        if not self._producto_ha_sido_seleccionado(id_producto=id):
+            producto_nombre = self._buscar_producto_por_id(id=id)["nombre"]
+            self.fila_2.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(GlutenNormalText(value=id)),
+                        ft.DataCell(GlutenNormalText(value=producto_nombre)),
+                        ft.DataCell(
+                            GlutenEntryField(
+                                hint_text="cantidad",
+                                width=80,
+                                height=35,
+                                size_text=12,
+                                on_change=self._on_escribir_precio_cantidad,
+                            )
+                        ),
+                        ft.DataCell(
+                            GlutenEntryField(
+                                hint_text="precio unitario",
+                                width=80,
+                                height=35,
+                                size_text=12,
+                                on_change=self._on_escribir_precio_cantidad,
+                            )
+                        ),
+                    ]
+                )
             )
-        )
+            self.productos_seleccionados_ids.append(id)
+
+    def _reiniciar_formulario(self):
+        self.productos_vendidos.clear()
+        self.fila_2.rows.clear()
+        self.fila_2.update()
+        self.productos_seleccionados_ids.clear()
+        self.total_texto.value = f"{0.0}$"
+        self.total_texto.update()
+        self.actualizar_total(0.0)
 
 
 class GlutenDatePickerField(ft.Row):
@@ -224,11 +269,14 @@ class GlutenDatePickerField(ft.Row):
         self.controls = [self.entrada, self.boton_fecha]
 
     def on_click_fecha(self, e: ft.Event[ft.DatePicker]) -> None:
-        self.entrada.value = e.control.value.strftime("%m/%d/%Y")
+        self.entrada.value = e.control.value.strftime("%Y-%m-%d")
 
     @property
     def valor(self) -> ft.TextField.value:
         return self.entrada.value
+    
+    def limpiar_entrada(self):
+        self.entrada.value = ''
 
 
 class GlutenProductsPickerField(ft.Row):
@@ -260,6 +308,14 @@ class GlutenProductsPickerField(ft.Row):
     def valor(self) -> ft.TextField.value:
         return self.entrada.value
 
+    def limpiar_entrada(self):
+        self.entrada.value = ''
+        self.dialog_productos._reiniciar_formulario()
+
+    @property
+    def productos(self) -> list[dict]:
+        return self.dialog_productos.productos_vendidos
+
 
 class GlutenTextInput(ft.Container):
     def __init__(self, etiqueta: str = "Tag", pista_texto: str = "Pista", **kwargs):
@@ -282,6 +338,9 @@ class GlutenTextInput(ft.Container):
     @property
     def valor(self):
         return self.entrada.valor
+    
+    def limpiar_entrada(self):
+        self.entrada.value = ''
 
     def _construir_input(self) -> ft.Column:
         return ft.Column(
@@ -300,6 +359,9 @@ class GlutenDropdownInput(GlutenTextInput):
     @property
     def valor(self):
         return self.entrada.valor
+    
+    def limpiar_entrada(self):
+        self.entrada.value = ''
 
 
 class GlutenDatePickerInput(GlutenTextInput):
@@ -319,6 +381,9 @@ class GlutenDatePickerInput(GlutenTextInput):
     @property
     def valor(self):
         return self.entrada.valor
+    
+    def limpiar_entrada(self):
+        self.entrada.limpiar_entrada()
 
 
 class GlutenProductsPickerInput(GlutenTextInput):
@@ -329,7 +394,7 @@ class GlutenProductsPickerInput(GlutenTextInput):
             pagina_principal=self.pagina_principal,
             productos=productos,
             pista=self.pista_texto,
-            actualizar_total=self.actualizar_total
+            actualizar_total=self.actualizar_total,
         )
         self.width = 235
         self.content = self._construir_input()
@@ -339,8 +404,16 @@ class GlutenProductsPickerInput(GlutenTextInput):
             spacing=self.spacing, controls=[self.etiqueta_texto, self.entrada]
         )
 
-    def actualizar_total(self, total: float):
+    @property
+    def productos(self) -> list[dict]:
+        return self.entrada.productos
+
+    def actualizar_total(self, total: float) -> None:
         self.entrada.entrada.value = total
+        self.entrada.entrada.update()
+    
+    def limpiar_entrada(self):
+        self.entrada.limpiar_entrada()
 
 
 class GlutenButton(ft.TextButton):
