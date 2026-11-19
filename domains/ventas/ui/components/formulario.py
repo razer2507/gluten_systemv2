@@ -1,3 +1,5 @@
+import asyncio
+
 import flet as ft
 
 from domains.ventas.strategies import CanalFactory
@@ -6,10 +8,8 @@ from shared.ui.components import (
     GlutenDatePickerInput,
     GlutenDropdownInput,
     GlutenProductsPickerInput,
-    GlutenNormalText,
 )
 from shared.utils import to_dropdown_option
-import asyncio
 
 
 class FormularioVentasComponent(ft.Container):
@@ -100,8 +100,8 @@ class FormularioVentasComponent(ft.Container):
                 }
             )
             msg = f"Venta Registrada con exito({self.productos_dropdown.valor}$) ID {res_id}"
-        except Exception as e:
-            msg = f"Error al registrar la venta"
+        except Exception:  # noqa: BLE001
+            msg = "Error al registrar la venta"
             success = False
         finally:
             color = ft.Colors.GREEN_700 if success else ft.Colors.RED_700

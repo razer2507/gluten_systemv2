@@ -42,28 +42,3 @@ class VentasView(ft.Container):
         return self.service.registrar_venta(**data)
    
 
-# --- BLOQUE DE PRUEBA RÁPIDA DE LA UI  ---
-if __name__ == "__main__":
-
-    def main(page: ft.Page):
-        page.title = "Prueba Aislada: Formulario Ventas"
-        page.bgcolor = ft.Colors.BLACK
-        repo_v = PostgresVentasRepository()
-        services = VentasService(venta_repo=repo_v, clientes_repo=None)
-        ventas_vista = VentasView(
-            clientes=[
-                {"id": 1, "nombre": "paul ramirez", "referencia": "venecia"},
-                {"id": 2, "nombre": "rusmilena", "referencia": "venecia"},
-            ],
-            productos=[
-                {"id": 1, "nombre": "Maxi combo", "categoria": "panaderia"},
-                {"id": 2, "nombre": "Mini Lunch", "categoria": "panaderia"},
-            ],
-            estados=["Pendiente", "Pagado"],
-            page=page,
-            service=services,
-        )
-        page.add(ventas_vista)
-
-    # Lanzas únicamente este componente en ventana
-    ft.run(main)
