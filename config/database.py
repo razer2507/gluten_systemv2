@@ -17,17 +17,10 @@ def transaction(settings:DatabaseSettings)-> psycopg.Connection:
         yield conn
         conn.commit()
 
-    except psycopg.OperationalError:
+    except Exception:
         conn.rollback()
         raise
 
     finally:
         conn.close()
 
-#prueba rapida 
-
-if __name__ == '__main__':
-    with transaction(settings=DatabaseSettings.test_from_env()) as t:
-        cursor = t.cursor()
-        cursor.execute('SELECT * FROM ventas')
-        print(cursor.fetchall())
