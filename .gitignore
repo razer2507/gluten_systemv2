@@ -1,1 +1,15 @@
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Entornos y herramientas
+venv/
+.venv/
+.pytest_cache/
+.flet/
+
+# Repos anidados / backups
+gluten_systemv2/
