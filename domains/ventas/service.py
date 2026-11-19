@@ -12,11 +12,10 @@ class VentasService:
     """Servicio de aplicación para el dominio de ventas."""
 
     def __init__(
-        self, venta_repo: VentasRepository, clientes_repo: ClientesRepository 
+        self, venta_repo: VentasRepository 
     ) -> None:
         """Inyecta de forma única el contrato del repositorio de ventas."""
         self._venta_repo = venta_repo
-        self._clientes_repo = clientes_repo
         self.canal_factory = CanalFactory()
 
     def registrar_venta(
