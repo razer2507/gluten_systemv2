@@ -4,8 +4,10 @@ from uuid import uuid4
 import pytest
 
 from config.settings import DatabaseSettings
+from domains.gastos.infrastructure.postgres_repo import (
+    PostgresGastosRepository,
+)
 from domains.gastos.models import Gasto
-from domains.gastos.repository import PostgresGastosRepository
 
 repo = PostgresGastosRepository(DatabaseSettings.test_from_env())
 

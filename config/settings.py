@@ -1,12 +1,13 @@
 # config/settings.py
 import os
 from dataclasses import dataclass
+
 from dotenv import load_dotenv
 
 load_dotenv()  # una sola vez en todo el proyecto
 
 @dataclass(frozen=True)
-class DatabaseSettings():
+class DatabaseSettings:
     host: str | None = None
     port: int | None = None 
     dbname: str | None = None 

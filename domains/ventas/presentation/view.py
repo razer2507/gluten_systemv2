@@ -1,8 +1,9 @@
 import flet as ft
 
-from domains.ventas.repository import PostgresVentasRepository
-from domains.ventas.service import VentasService
-from domains.ventas.ui.components.formulario import FormularioVentasComponent
+from domains.ventas.app_services.service import RegistrarVentaUseCase
+from domains.ventas.presentation.components.formulario import (
+    FormularioVentasComponent,
+)
 from shared.ui.components import GlutenNormalText
 
 
@@ -13,7 +14,7 @@ class VentasView(ft.Container):
         productos: list[dict],
         estados: list[dict],
         page: ft.Page,
-        service: VentasService,
+        service: RegistrarVentaUseCase,
         **kwargs,
     ):
         super().__init__(**kwargs)

@@ -1,8 +1,12 @@
 # config/database.py
+from collections.abc import Iterator
 from contextlib import contextmanager
+
 import psycopg
 from psycopg.rows import dict_row
+
 from config.settings import DatabaseSettings
+
 
 def get_conn(settings:DatabaseSettings) -> psycopg.Connection:
     return psycopg.connect(
@@ -11,7 +15,7 @@ def get_conn(settings:DatabaseSettings) -> psycopg.Connection:
     )
 
 @contextmanager
-def transaction(settings:DatabaseSettings)-> psycopg.Connection:
+def transaction(settings: DatabaseSettings) -> Iterator[psycopg.Connection]:
     conn = get_conn(settings)
     try:
         yield conn

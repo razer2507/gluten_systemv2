@@ -1,11 +1,21 @@
 from datetime import date
 
 from config.settings import DatabaseSettings
-from domains.ventas.repository import PostgresVentasRepository
-from domains.ventas.service import VentasService
+from domains.clientes.infrastructure.postgres_repo import (
+    PostgresClientesRepository,
+)
+from domains.ventas.app_services.service import RegistrarVentaUseCase
+from domains.ventas.infrastructure.postgres_repo import (
+    PostgresVentasRepository,
+)
 
-repository_postgres = PostgresVentasRepository(DatabaseSettings.test_from_env())
-service = VentasService(venta_repo=repository_postgres)
+settings = DatabaseSettings.test_from_env()
+repository_postgres = PostgresVentasRepository(settings)
+clientes_repo = PostgresClientesRepository(settings)
+service = RegistrarVentaUseCase(
+    ventas_repo=repository_postgres,
+    clientes_repo=clientes_repo,
+)
 
 
 def test_registrar_venta():

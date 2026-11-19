@@ -2,7 +2,7 @@ import asyncio
 
 import flet as ft
 
-from domains.ventas.strategies import CanalFactory
+from domains.ventas.domain_services.strategies import CanalFactory
 from shared.ui.components import (
     GlutenButton,
     GlutenDatePickerInput,

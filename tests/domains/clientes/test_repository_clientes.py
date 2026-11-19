@@ -1,7 +1,10 @@
+from config.settings import DatabaseSettings
+from domains.clientes.infrastructure.postgres_repo import (
+    PostgresClientesRepository,
+)
 from domains.clientes.models import Cliente
-from domains.clientes.repository import PostgresClientesRepository
 
-repo = PostgresClientesRepository()
+repo = PostgresClientesRepository(DatabaseSettings.test_from_env())
 
 def test_insert_cliente():
     cliente = Cliente(nombre="Juan Perez", referencia="ref123")

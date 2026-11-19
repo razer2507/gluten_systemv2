@@ -3,8 +3,10 @@ from uuid import uuid4
 import pytest
 
 from config.settings import DatabaseSettings
+from domains.productos.infrastructure.postgres_repo import (
+    PostgresProductosRepository,
+)
 from domains.productos.models import Producto
-from domains.productos.repository import PostgresProductosRepository
 
 repo = PostgresProductosRepository(DatabaseSettings.test_from_env())
 

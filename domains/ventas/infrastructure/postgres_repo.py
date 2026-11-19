@@ -1,40 +1,7 @@
-import os
-from abc import ABC, abstractmethod
 from config.database import transaction
 from config.settings import DatabaseSettings
-import psycopg
-from dotenv import load_dotenv  # noqa: F401, RUF100
-
-load_dotenv()
-
-
 from domains.ventas.models import Venta
-
-
-class VentasRepository(ABC):
-    @abstractmethod
-    def insert(self, venta: Venta) -> int:
-        pass
-
-    @abstractmethod
-    def get_all(self) -> list:
-        pass
-
-    @abstractmethod
-    def get_by_id(self, id) -> Venta:
-        pass
-
-    @abstractmethod
-    def get_filtered(self, **kwargs) -> list:
-        pass
-
-    @abstractmethod
-    def delete(self, venta: Venta) -> None:
-        pass
-
-    @abstractmethod
-    def update(self, venta: Venta) -> None:
-        pass
+from domains.ventas.ports.repository import VentasRepository
 
 
 class PostgresVentasRepository(VentasRepository):
@@ -88,7 +55,7 @@ class PostgresVentasRepository(VentasRepository):
             items = cursor.fetchall()
             return [Venta.from_dict(data) for data in items]
 
-    def get_by_id(self, id) -> Venta:
+    def get_by_id(self, id) -> Venta | None:
         query = """ 
                 SELECT 
                     v.id, v.fecha, v.cliente_id, v.total, v.estado,
@@ -116,7 +83,7 @@ class PostgresVentasRepository(VentasRepository):
 
     def get_filtered(self, **kwargs) -> list:
         if not kwargs:
-            raise ValueError('Faltan parametros para el filtro')
+            return self.get_all()
         query_base = """SELECT 
                             ventas.id,ventas.fecha,ventas.cliente_id,ventas.total,ventas.estado,COALESCE(
                             json_agg(
@@ -143,12 +110,11 @@ class PostgresVentasRepository(VentasRepository):
         if kwargs.get("estado"):
             query_base += " AND ventas.estado = %(estado)s"
             params["estado"] = kwargs["estado"]
-        if kwargs.get("total_min") and kwargs.get("total_max"):
-            query_base += " AND ventas.total BETWEEN %(total_min)s AND %(total_max)s"
+        if kwargs.get("total_min") is not None:
+            query_base += " AND ventas.total >= %(total_min)s"
             params["total_min"] = kwargs["total_min"]
-            params["total_max"] = kwargs["total_max"]
-        elif kwargs.get("total_max"):
-            query_base += " AND ventas.total >= %(total_max)s"
+        if kwargs.get("total_max") is not None:
+            query_base += " AND ventas.total <= %(total_max)s"
             params["total_max"] = kwargs["total_max"]
 
         query_base += " GROUP BY ventas.id ORDER BY ventas.fecha DESC;"

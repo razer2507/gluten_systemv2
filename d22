@@ -1,0 +1,137 @@
+[33mcommit 663e0e358f2a41c5e21b5c801a16182bc3124df7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    wip(app): composition root inicial incompleto
+
+[33mcommit 94d14761a04b87ade4f55472636c17fc3db0dd7c[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    refactor(ventas-ui): quitar cableado manual de la vista y limpiar formulario
+
+[33mcommit 8ad9396655ea07988e47393cbefb7b63b919adc8[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    fix(db): hacer rollback ante cualquier excepcion
+
+[33mcommit 1fc315fd28227e5a18d919a55c229f59ee7ea8c2[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    refactor(ventas): desacoplar VentasService del repositorio de clientes
+
+[33mcommit ec04d0453cb1b49fa6eb05699ec898dfaf197af0[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    fix(tests): adaptar pruebas de ventas a settings inyectadas
+
+[33mcommit e76ec8a1870a8c13f4aae37d55a46ad9a78c7348[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    test: cubrir repositorios de productos y gastos
+
+[33mcommit 5070bb1416f950cf9a30870dd89291f071169f98[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    feat(gastos): modelo y repositorio postgres
+
+[33mcommit 2c0bab55dd7bad68332e13f61088a1ab712a1d38[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:40:41 2026 -0400
+
+    feat(productos): modelo y repositorio postgres
+
+[33mcommit 54e437b62b683abed4b957e2b736e35eb918c028[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:13:12 2026 -0400
+
+    feat(ventas-ui): mostrar banner de resultado al registrar venta
+
+[33mcommit 9443660aece3f2e2aa663a3579cf20f25faa4356[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:13:12 2026 -0400
+
+    chore: ignorar __pycache__ y destrackear artefactos de python
+
+[33mcommit d22aa63eb43893e6f9872f38d0c11ba5c229fc18[m
+Author: paul <razeryutux@gmail.com>
+Date:   Wed Nov 18 20:07:34 2026 -0400
+
+    refactor(db): centralizar conexion y transacciones, inyectar settings en repositorio de ventas
+
+[33mcommit cafdc95d4020301982211f59fb5f5038dd9cf676[m
+Author: razer2507 <razeryutux@gmail.com>
+Date:   Wed Nov 18 07:33:53 2026 -0400
+
+    backup
+
+[33mcommit 978a4783ad860efe50585ce4d0d02f130d761ffc[m
+Author: paul <razeryutux@gmail.com>
+Date:   Sat Oct 31 22:49:35 2026 -0400
+
+    selctor de productos agregado feat:glutenProductsInput
+
+[33mcommit 29eaa580f36a5b7797bdc9b4fc102e1a471dddee[m
+Author: paul <razeryutux@gmail.com>
+Date:   Tue Oct 27 22:59:38 2026 -0400
+
+    ids de productos incorporados y dialog de productos feat:glutenProduct Dialog y GlutenDateDialog
+
+[33mcommit 519de8bc9d251fb2c53ca415dc286cd0c610affb[m
+Author: paul <razeryutux@gmail.com>
+Date:   Mon Oct 26 19:58:19 2026 -0400
+
+    Control de entrada de fecha integrado feat : GlutenDatePickerInput
+
+[33mcommit 3b92768f9d913f188a8e9a394e51a8510e05b059[m
+Author: paul <razeryutux@gmail.com>
+Date:   Sun Oct 25 19:37:13 2026 -0400
+
+    Selector de fecha integrado:feat GlutenDatePicker
+
+[33mcommit 25debe41a871a488a1f047b2cc8a88993ef1d77f[m
+Author: paul <razeryutux@gmail.com>
+Date:   Thu Oct 22 19:27:20 2026 -0400
+
+    Botones y entradas de selccion agregadas feat:glutendropdown,glutenbutton
+
+[33mcommit dc85a48f557d39b3c3a79a17b62dd4d4f895a338[m
+Author: paul <razeryutux@gmail.com>
+Date:   Thu Oct 15 22:46:09 2026 -0400
+
+    Inputs Agregados feat:GlutenTextIput
+
+[33mcommit 32e01ac57286ca9df072c2387c8c33d0b56a7049[m
+Author: paul <razeryutux@gmail.com>
+Date:   Mon Oct 12 18:57:57 2026 -0400
+
+    feat: ventas ui initialized
+
+[33mcommit 6f373f1e425ac5b4065e1851af6640d94c7016f6[m
+Author: paul <razeryutux@gmail.com>
+Date:   Mon Oct 12 11:04:53 2026 -0400
+
+    ocultar .env
+
+[33mcommit 437d3430a374546ec6d4390cb806f83fdb772470[m
+Author: paul <razeryutux@gmail.com>
+Date:   Mon Oct 12 11:02:03 2026 -0400
+
+    ocultar la bd jaja
+
+[33mcommit 536e48f7cd34d7d6970aaabc77e8de4728f13d9e[m
+Author: paul <razeryutux@gmail.com>
+Date:   Sun Oct 11 21:38:10 2026 -0400
+
+    feat: class RepositorioClientes
+
+[33mcommit a6f72b3ccea443004d398628a3eb005035f24f00[m
+Author: paul <razeryutux@gmail.com>
+Date:   Sat Oct 10 11:44:20 2026 -0400
+
+    feat validar_venta

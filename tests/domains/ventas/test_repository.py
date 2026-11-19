@@ -1,8 +1,10 @@
 from datetime import date
 
 from config.settings import DatabaseSettings
+from domains.ventas.infrastructure.postgres_repo import (
+    PostgresVentasRepository,
+)
 from domains.ventas.models import DetalleVenta, Venta
-from domains.ventas.repository import PostgresVentasRepository
 
 repo = PostgresVentasRepository(DatabaseSettings.test_from_env())
 

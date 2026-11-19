@@ -30,8 +30,8 @@ class CanalPedidosYaStrategy(CanalVentaStrategy):
 class CanalFactory:
     def __init__(self):
         self.canales = {
-            'pedidosya':CanalPedidosYaStrategy,
-            'presencial':CanalPedidosYaStrategy
+            'pedidosya': CanalPedidosYaStrategy,
+            'presencial': CanalPresencialStrategy,
         }
     
     def obtener_canal(self,canal_nombre:str = 'presencial'):
