@@ -1,10 +1,9 @@
 import os
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
-
+from config.database import transaction
+from config.settings import DatabaseSettings
 import psycopg
 from dotenv import load_dotenv  # noqa: F401, RUF100
-from psycopg.rows import dict_row
 
 load_dotenv()
 
@@ -13,10 +12,6 @@ from domains.ventas.models import Venta
 
 
 class VentasRepository(ABC):
-    @abstractmethod
-    def _get_conn(self):
-        pass
-
     @abstractmethod
     def insert(self, venta: Venta) -> int:
         pass
@@ -43,24 +38,8 @@ class VentasRepository(ABC):
 
 
 class PostgresVentasRepository(VentasRepository):
-    @contextmanager
-    def _get_conn(self):
-        conn = psycopg.connect(
-            host=os.getenv("TEST_HOST"),
-            dbname=os.getenv("TEST_DATABASE"),
-            user=os.getenv("TEST_USER"),
-            password=os.getenv("TEST_PASSWORD"),
-            port=os.getenv("TEST_PORT"),
-            row_factory=dict_row,
-        )
-        try:
-            yield conn
-            conn.commit()
-        except psycopg.Error as e:
-            conn.rollback()
-            print(e)
-        finally:
-            conn.close()
+    def __init__(self,settings:DatabaseSettings)-> None:
+        self.settings = settings
 
     def insert(self, venta: Venta) -> int:
         query_ventas = """
@@ -71,7 +50,10 @@ class PostgresVentasRepository(VentasRepository):
                 INSERT INTO detalle_ventas(venta_id,producto_id,cantidad,precio_unitario) 
                 VALUES (%(venta_id)s,%(producto_id)s,%(cantidad)s,%(precio_unitario)s);
                 """
-        with self._get_conn() as conn, conn.cursor() as cursor:
+        with (
+            transaction(self.settings) as conn,
+            conn.cursor() as cursor,
+        ):
             cursor.execute(query_ventas, venta.to_dict(exclude_id=True))
             venta_insertada_id = cursor.fetchone()["id"]
             productos = [
@@ -82,7 +64,10 @@ class PostgresVentasRepository(VentasRepository):
             return venta_insertada_id
 
     def get_all(self) -> list:
-        with self._get_conn() as conn, conn.cursor() as cursor:
+        with (
+            transaction(self.settings) as conn,
+            conn.cursor() as cursor,
+        ):
             query = """ 
                 SELECT 
                     v.id, v.fecha, v.cliente_id, v.total, v.estado,
@@ -121,14 +106,17 @@ class PostgresVentasRepository(VentasRepository):
                 WHERE v.id = %(id)s
                 GROUP BY v.id;
                 """
-        with self._get_conn() as conn, conn.cursor() as cursor:
+        with (
+            transaction(self.settings) as conn,
+            conn.cursor() as cursor,
+        ):
             cursor.execute(query, {"id": id})
             data = cursor.fetchone()
             return Venta.from_dict(data)
 
     def get_filtered(self, **kwargs) -> list:
         if not kwargs:
-            raise psycopg.OperationalError
+            raise ValueError('Faltan parametros para el filtro')
         query_base = """SELECT 
                             ventas.id,ventas.fecha,ventas.cliente_id,ventas.total,ventas.estado,COALESCE(
                             json_agg(
@@ -164,16 +152,25 @@ class PostgresVentasRepository(VentasRepository):
             params["total_max"] = kwargs["total_max"]
 
         query_base += " GROUP BY ventas.id ORDER BY ventas.fecha DESC;"
-        with self._get_conn() as conn, conn.cursor() as cursor:
+        with (
+            transaction(self.settings) as conn,
+            conn.cursor() as cursor,
+        ):
             cursor.execute(query_base, params)
             return [Venta.from_dict(data) for data in cursor.fetchall()]
 
     def update(self, venta: Venta) -> None:
-        with self._get_conn() as conn, conn.cursor() as cursor:
+        with (
+            transaction(self.settings) as conn,
+            conn.cursor() as cursor,
+        ):
             query = "UPDATE ventas SET fecha=%(fecha)s,cliente_id=%(cliente_id)s,total=%(total)s,estado=%(estado)s WHERE id=%(id)s"
             cursor.execute(query, venta.to_dict(exclude_id=False))
 
     def delete(self, venta: Venta) -> None:
-        with self._get_conn() as conn, conn.cursor() as cursor:
+        with (
+            transaction(self.settings) as conn,
+            conn.cursor() as cursor,
+        ):
             query = "DELETE FROM ventas WHERE id=%(id)s"
             cursor.execute(query, {"id": venta.id})
