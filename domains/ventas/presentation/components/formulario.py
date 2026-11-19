@@ -16,9 +16,9 @@ class FormularioVentasComponent(ft.Container):
     def __init__(
         self,
         pagina_principal: ft.Page,
-        clientes: dict | list,
-        productos: dict | list,
-        estados: dict | list,
+        clientes,
+        productos,
+        estados,
         on_guardar_venta_click: callable(),
     ):
         super().__init__()
@@ -40,21 +40,18 @@ class FormularioVentasComponent(ft.Container):
             etiqueta="Fecha",
         )
         self.estado_input = GlutenDropdownInput(
-            pista_texto="Contado o Credito?", etiqueta="Estado", items=self.estados
+            pista_texto="Contado o Credito?", etiqueta="Estado", items=['contado','credito']
         )
         self.cliente_dropdown = GlutenDropdownInput(
             pista_texto="Elegir un cliente",
             etiqueta="Cliente",
-            items=to_dropdown_option(
-                keys=[i["id"] for i in self.clientes],
-                values=[i["nombre"] for i in self.clientes],
-            ),
-        )
-        self.productos_dropdown = GlutenProductsPickerInput(
-            pagina_principal=self.pagina_principal,
-            productos=self.productos,
-            etiqueta="Productos",
-            pista_texto="Seleccione productos-->",
+            items=[
+                ft.DropdownOption(
+                    key=str(cliente["id"]),
+                    text=cliente["nombre"],
+                )
+                for cliente in self.clientes
+            ]
         )
         self.canal_dropdown = GlutenDropdownInput(
             items=list(self.canales.canales.keys()),
@@ -72,8 +69,7 @@ class FormularioVentasComponent(ft.Container):
                     spacing=20,
                     controls=[
                         self.cliente_dropdown,
-                        self.canal_dropdown,
-                        self.productos_dropdown,
+                        self.canal_dropdown
                     ],
                 ),
                 ft.Row(
@@ -95,11 +91,10 @@ class FormularioVentasComponent(ft.Container):
                     "fecha": self.fecha_input.valor,
                     "estado": self.estado_input.valor,
                     "cliente_id": self.cliente_dropdown.valor,
-                    "productos": self.productos_dropdown.productos,
                     "canal": self.canal_dropdown.valor,
                 }
             )
-            msg = f"Venta Registrada con exito({self.productos_dropdown.valor}$) ID {res_id}"
+            msg = f"Venta Registrada con exito ID {res_id}"
         except Exception:  # noqa: BLE001
             msg = "Error al registrar la venta"
             success = False
@@ -121,6 +116,5 @@ class FormularioVentasComponent(ft.Container):
                 self.fecha_input.limpiar_entrada()
                 self.estado_input.limpiar_entrada()
                 self.cliente_dropdown.limpiar_entrada()
-                self.productos_dropdown.limpiar_entrada()
                 self.canal_dropdown.limpiar_entrada()
                 self.content.update()

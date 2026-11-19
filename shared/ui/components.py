@@ -41,7 +41,15 @@ class GlutenEntryField(ft.TextField):
 
 
 class GlutenDropdownField(ft.Dropdown):
-    def __init__(self, pista: str, items: list, **kwargs):
+    def __init__(
+        self,
+        pista: str,
+        items: list | None = None,
+        options: list[ft.DropdownOption] | None = None,
+        **kwargs,
+    ):
+        if options is None:
+            options = self.construir_opciones(items or [])
         super().__init__(
             text_style=GlutenTextSyle(),
             width=250,
@@ -50,25 +58,32 @@ class GlutenDropdownField(ft.Dropdown):
             label=pista,
             bgcolor=ft.Colors.BLACK,
             color=ft.Colors.WHITE,
+            options=options,
             **kwargs,
         )
-        self.options = self.construir_opciones(items)
 
-    def construir_opciones(self, items: list) -> list[ft.DropdownOption]:
-        if isinstance(items, list) and all(isinstance(i, tuple) for i in items):
-            return [
-                ft.DropdownOption(
-                    key=item[0], content=GlutenNormalText(size=12, value=item[1])
+    @staticmethod
+    def construir_opciones(items: list) -> list[ft.DropdownOption]:
+        opciones = []
+        for item in items:
+            if isinstance(item, ft.DropdownOption):
+                opciones.append(item)
+            elif isinstance(item, tuple):
+                key, value = item
+                opciones.append(
+                    ft.DropdownOption(
+                        key=str(key),
+                        content=GlutenNormalText(size=12, value=str(value)),
+                    )
                 )
-                for item in items
-            ]
-        else:
-            return [
-                ft.DropdownOption(
-                    key=item, content=GlutenNormalText(size=12, value=item)
+            else:
+                opciones.append(
+                    ft.DropdownOption(
+                        key=str(item),
+                        content=GlutenNormalText(size=12, value=str(item)),
+                    )
                 )
-                for item in items
-            ]
+        return opciones
 
     @property
     def valor(self):
@@ -396,7 +411,7 @@ class GlutenProductsPickerInput(GlutenTextInput):
             pista=self.pista_texto,
             actualizar_total=self.actualizar_total,
         )
-        self.width = 235
+        self.width = 400
         self.content = self._construir_input()
 
     def _construir_input(self) -> ft.Column:
@@ -433,3 +448,47 @@ class GlutenButton(ft.TextButton):
             ),
             **kwargs,
         )
+
+class VentasFilterDialog(ft.AlertDialog):
+    def __init__(self, on_actualizar: callable(), **kwargs):
+        super().__init__(**kwargs)
+        self.fecha_inicio_entry = GlutenTextInput(etiqueta="FECHA INICIAL")
+        self.fecha_fin_entry = GlutenTextInput(etiqueta="FECHA FINAL")
+        self.estado_entry = GlutenTextInput(etiqueta="ESTADO")
+        self.cliente_id_entry = GlutenTextInput(etiqueta="CLIENTE_ID")
+        self.total_max_entry = GlutenTextInput(etiqueta="TOTAL MAXIMO")
+        self.total_min_entry = GlutenTextInput(etiqueta="TOTAL MINIMO")
+        self.on_actualizar = on_actualizar
+        self.content = self._construir_content()
+        self.actions = [
+            ft.TextButton(
+                content="Actualizar Filtros",
+                on_click=lambda _: self.on_actualizar(self._valores),
+            )
+        ]
+        self.open = True
+
+    def _construir_content(self):
+        return ft.Column(
+            wrap=True,
+            controls=[
+                self.fecha_inicio_entry,
+                self.fecha_fin_entry,
+                self.cliente_id_entry,
+                self.estado_entry,
+                self.total_min_entry,
+                self.total_max_entry,
+            ],
+        )
+
+    @property
+    def _valores(self) -> dict:
+        return {
+            "fecha_inicio": self.fecha_inicio_entry.valor or None,
+            "fecha_fin": self.fecha_fin_entry.valor or None,
+            "id_cliente": self.cliente_id_entry.valor or None,
+            "estado": self.estado_entry.valor or None,
+            "total_min": self.total_min_entry.valor or None,
+            "total_max": self.total_max_entry.valor or None,
+        }
+        

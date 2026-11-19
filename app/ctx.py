@@ -12,24 +12,25 @@ from domains.productos.ports.repository import ProductosRepository
 from domains.ventas.app_services.service import RegistrarVentaUseCase
 from domains.ventas.infrastructure.postgres_repo import PostgresVentasRepository
 from domains.ventas.ports.repository import VentasRepository
-
+from domains.ventas.app_services.service import ListarVentasQuery
 
 class AppContext:
     def __init__(self, settings: DatabaseSettings):
         self.settings_db = settings
-        self.venta_repo: VentasRepository = PostgresVentasRepository(
+        self.ventas_repo: VentasRepository = PostgresVentasRepository(
             self.settings_db
         )
-        self.cliente_repo: ClientesRepository = PostgresClientesRepository(
+        self.clientes_repo:ClientesRepository = PostgresClientesRepository(
             self.settings_db
         )
-        self.producto_repo: ProductosRepository = PostgresProductosRepository(
+        self.gastos_repo:GastosRepository = PostgresGastosRepository(
             self.settings_db
         )
-        self.gasto_repo: GastosRepository = PostgresGastosRepository(
+        self.productos_repo:ProductosRepository = PostgresProductosRepository(
             self.settings_db
         )
-        self.registrar_venta = RegistrarVentaUseCase(
-            ventas_repo=self.venta_repo,
-            clientes_repo=self.cliente_repo,
+        self.registrar_venta_case = RegistrarVentaUseCase(
+            ventas_repo=self.ventas_repo,
+            clientes_repo=self.clientes_repo
         )
+        self.lista_ventas_query = ListarVentasQuery(ventas_repo=self.ventas_repo)

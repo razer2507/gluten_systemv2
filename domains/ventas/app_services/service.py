@@ -5,18 +5,17 @@ from domains.ventas.domain_services.strategies import CanalFactory, CanalVentaSt
 from domains.ventas.models import DetalleVenta, Venta
 from domains.ventas.ports.repository import VentasRepository
 from shared.exceptions import ClienteInvalidoError
-
+from domains.ventas.app_services.dtos import VentasBusquedaFilter
 
 class RegistrarVentaUseCase:
     def __init__(
         self,
         ventas_repo: VentasRepository,
-        clientes_repo: ClientesRepository,
-        canal_factory: CanalFactory | None = None,
+        clientes_repo: ClientesRepository
     ) -> None:
         self._ventas_repo = ventas_repo
         self._clientes_repo = clientes_repo
-        self._canal_factory = canal_factory or CanalFactory()
+        self._canal_factory = CanalFactory()
 
     def registrar_venta(
         self,
@@ -50,3 +49,12 @@ class RegistrarVentaUseCase:
         self, subtotal: float, strategy: CanalVentaStrategy
     ) -> float:
         return strategy.calcular_total(subtotal=subtotal)
+
+
+class ListarVentasQuery:
+    def __init__(self, ventas_repo: VentasRepository):
+        self.ventas_repo = ventas_repo
+
+    def listar_ventas(self, filter_v: VentasBusquedaFilter | None = None):
+        filtros = vars(filter_v) if filter_v is not None else {}
+        return self.ventas_repo.get_filtered(**filtros)
