@@ -6,9 +6,10 @@ from shared.ui.components import (
     GlutenDatePickerInput,
     GlutenDropdownInput,
     GlutenProductsPickerInput,
-    GlutenNormalText
+    GlutenNormalText,
 )
 from shared.utils import to_dropdown_option
+import asyncio
 
 
 class FormularioVentasComponent(ft.Container):
@@ -86,7 +87,8 @@ class FormularioVentasComponent(ft.Container):
 
         return columna_principal
 
-    def _procesar_venta(self):
+    async def _procesar_venta(self):
+        success = True
         try:
             res_id = self.on_guardar_venta_click(
                 {
@@ -97,29 +99,24 @@ class FormularioVentasComponent(ft.Container):
                     "canal": self.canal_dropdown.valor,
                 }
             )
-            msg = f"Venta Registrada con exito({self.productos_dropdown.valor}$) -> ID {res_id}"
-            success = True
+            msg = f"Venta Registrada con exito({self.productos_dropdown.valor}$) ID {res_id}"
         except Exception as e:
-            msg = f"Error al registrar la venta -> {e}"
+            msg = f"Error al registrar la venta"
             success = False
         finally:
             color = ft.Colors.GREEN_700 if success else ft.Colors.RED_700
-            icon = ft.Icons.CHECK if success else ft.Icons.ALARM
-            self.content.controls.append(
-                ft.Row(
-                alignment=ft.MainAxisAlignment.CENTER,
-                controls=
-                ft.Chip(
-                        label=ft.Text(msg,color=color),
-                        leading=icon,
-                        bgcolor=ft.Colors.BLACK,
-                        disabled_color=ft.Colors.GREEN_100,
-                        autofocus=True,
-                        delete_icon = ft.Icons.DELETE,
-                        on_delete= lambda _ : self.content.controls.pop()
-                    )
+            icon = ft.Icons.CHECK if success else ft.Icons.DANGEROUS
+            mensaje = ft.Banner(
+                leading=ft.Icon(icon,color=color),
+                content=ft.Text(msg,color=color),
+                actions=[ft.TextButton("Aceptar",on_click= lambda _ : self.pagina_principal.pop_dialog())],
+                bgcolor=ft.Colors.BLACK,
+                open=True,
             )
-            )
+            self.pagina_principal.show_dialog(mensaje)
+            await asyncio.sleep(2)
+            self.pagina_principal.pop_dialog()
+
             if success:
                 self.fecha_input.limpiar_entrada()
                 self.estado_input.limpiar_entrada()
