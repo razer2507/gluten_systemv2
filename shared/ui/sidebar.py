@@ -12,10 +12,12 @@ class SideBar(ft.Container):
                 expand=True,
                 controls=[
                     ft.TabBar(
+                        overlay_color=ft.Colors.ORANGE_400,
+                        indicator_color = ft.Colors.ORANGE_900,
                         on_click=self.on_click,
                         tabs=[
-                            ft.Tab(label=ft.Text("Ventas",color=ft.Colors.ORANGE_400), icon=ft.Icons.POINT_OF_SALE),
-                            ft.Tab(label=ft.Text('Productos',color=ft.Colors.ORANGE_400), icon=ft.Icons.SETTINGS),
+                            ft.Tab(label=ft.Text("Ventas",color=ft.Colors.WHITE), icon=ft.Icons.POINT_OF_SALE),
+                            ft.Tab(label=ft.Text('Productos',color=ft.Colors.WHITE), icon=ft.Icons.SETTINGS),
                         ],
                     ),
                     ft.TabBarView(

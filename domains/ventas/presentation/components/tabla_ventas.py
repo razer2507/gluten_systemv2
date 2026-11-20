@@ -12,7 +12,6 @@ class TablaVisualizacionVentas(ft.Container):
         self.filtro = VentasBusquedaFilter()
         self.filtro_dialog = VentasFilterDialog(on_actualizar=self._actualizar_tabla)
         self.content = self._construir_tabla()
-        self.alignment = ft.MainAxisAlignment.CENTER
 
     def _obtener_filas(self):
         ventas = self.obtener_ventas_callback(self.filtro) or []
@@ -49,7 +48,7 @@ class TablaVisualizacionVentas(ft.Container):
                     height=400,
                     scroll=ft.ScrollMode.ALWAYS,
                     controls=[
-                        ft.Row(
+                        ft.Column(
                             scroll=ft.ScrollMode.ALWAYS,
                             controls=[
                                 ft.DataTable(

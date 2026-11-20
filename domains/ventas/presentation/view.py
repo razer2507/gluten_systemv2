@@ -39,16 +39,18 @@ class VentasView(ft.Container):
 
     def construir_vista(self, vista: str):
         vista = self._obtener_vista_factory(vista)
+        msg = self.vista_actual
         return ft.Column(
             horizontal_alignment=ft.MainAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.START,
             spacing=10,
             controls=[
                 ft.Row(
+                    spacing=40,
                     controls=[
-                        GlutenNormalText(value="Formulario de Ventas", size=32),
+                        GlutenNormalText(value="Ventas", size=32),
                         ft.TextButton(
-                            content="CAMBIAR A VISUALIZACION",
+                            content=msg,
                             on_click=lambda _: self._togglear_vista(),
                         ),
                     ]
@@ -64,8 +66,8 @@ class VentasView(ft.Container):
         if self.vista_actual == "formulario":
             self.vista_actual = "visualizacion"
             self.content = self.construir_vista(vista="visualizacion")
-        else:
-            self.vista_actual = "visualizacion"
+        elif self.vista_actual == 'visualizacion':
+            self.vista_actual = "formulario"
             self.content = self.construir_vista(vista="formulario")
 
         self.update()

@@ -8,6 +8,7 @@ from shared.ui.components import (
     GlutenDatePickerInput,
     GlutenDropdownInput,
     GlutenProductsPickerInput,
+    GlutenNormalText
 )
 from shared.utils import to_dropdown_option
 
@@ -48,7 +49,7 @@ class FormularioVentasComponent(ft.Container):
             items=[
                 ft.DropdownOption(
                     key=str(cliente["id"]),
-                    text=cliente["nombre"],
+                    content=GlutenNormalText(value=cliente["nombre"]),
                 )
                 for cliente in self.clientes
             ]
